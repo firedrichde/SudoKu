@@ -1,5 +1,7 @@
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Region
@@ -10,6 +12,7 @@ public class Region {
     public static final int COLS = 3;
     private int id;
     private List<CellEntity> cells;
+    private Set<Integer> solvedNumberSet;
 
     public Region(int id) {
         this.id = id;
@@ -19,6 +22,11 @@ public class Region {
                 cells.add(new CellEntity(i, j));
             }
         }
+        this.solvedNumberSet = new HashSet<>();
+    }
+
+    public  int getId(){
+        return id;
     }
 
     public List<CellEntity> getCellsAtRowIndex(int row) {
@@ -30,5 +38,36 @@ public class Region {
         return result;
     }
 
-    
+    public List<CellEntity> getCellAtColIndex(int col) {
+        List<CellEntity> result = new ArrayList<>();
+        for (int i = 0; i < ROWS; i++) {
+            int index = i * COLS + col;
+            result.add(cells.get(index));
+        }
+        return result;
+    }
+
+    public CellEntity getCell(int row, int col) {
+        int index = row * COLS + col;
+        return cells.get(index);
+    }
+
+    public boolean assignNumber(int row, int col, int number) {
+        if (containsNumber(number)) {
+            return false;
+        } else {
+            CellEntity cellEntity = getCell(row, col);
+            cellEntity.setNumber(number);
+            solvedNumberSet.add(number);
+            return true;
+        }
+    }
+    public void add(CellEntity cellEntity){
+        cells.add(cellEntity);
+        solvedNumberSet.add(cellEntity.getNumber());
+    }
+
+    public boolean containsNumber(int number) {
+        return solvedNumberSet.contains(number);
+    }
 }

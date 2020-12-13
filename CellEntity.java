@@ -1,5 +1,7 @@
+import java.util.Objects;
+
 public class CellEntity {
-    public static final int UNDEFINITIVE_NUMBER = -1;
+    public static final int UN_DEFINITIVE_NUMBER = -1;
 
     private int number;
     private int row;
@@ -14,7 +16,7 @@ public class CellEntity {
     }
 
     public CellEntity(int row, int col) {
-        this(UNDEFINITIVE_NUMBER, row, col);
+        this(UN_DEFINITIVE_NUMBER, row, col);
     }
 
     public void setNumber(int number) {
@@ -43,5 +45,18 @@ public class CellEntity {
 
     public boolean isDefinitive(){
         return definitive;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        CellEntity that = (CellEntity) o;
+        return number == that.number;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(number);
     }
 }

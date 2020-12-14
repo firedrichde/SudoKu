@@ -70,4 +70,8 @@ public class Region {
     public boolean containsNumber(int number) {
         return solvedNumberSet.contains(number);
     }
+
+    public Set<Integer> getCandidates(){
+        return NumberUtil.complement(solvedNumberSet);
+    }
 }

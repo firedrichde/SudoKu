@@ -42,7 +42,7 @@ public class Board {
         parse();
     }
 
-    public void scanAll(){
+    public void scanAll() {
         List<Integer> order = numberRecorder.sortByCount();
         for (int i = 0; i < order.size(); i++) {
             int scanNumber = order.get(i);
@@ -50,20 +50,50 @@ public class Board {
         }
     }
 
-    private void scan(int number){
+    private void scan(int number) {
         Set<Integer> regions_with_number = regionsWithNumber(number);
-        if (regions_with_number.size()==0 || regions_with_number.size()==NumberRecorder.MAX_NUMBER){
+        if (regions_with_number.size() == 0 || regions_with_number.size() == NumberRecorder.MAX_NUMBER) {
             return;
         }
         Set<Integer> regions_without_number = NumberUtil.complement(regions_with_number);
+        for (Integer regionId :
+                regions_without_number) {
+            scanRegion(regionId, number, regions_with_number);
+        }
+    }
+
+    private void scanRegion(int regionId, int number, Set<Integer> regions) {
+
+        List<Integer> rowAvailable = new ArrayList<>();
+        List<Integer> colAvailable = new ArrayList<>();
+        for (int i = 0; i < Region.COLS; i++) {
+            int rowIndex = getRowFromRegion(regionId, i);
+            if (!rowGroupContains(number, rowIndex)) {
+                rowAvailable.add(i);
+            }
+        }
+        for (int j = 0; j < Region.COLS; j++) {
+            int colIndex = getColFromRegion(regionId, j);
+            if (!colGroupContains(colIndex, number)) {
+                colAvailable.add(j);
+            }
+        }
+        for (Integer row:
+             rowAvailable) {
+            for (Integer col:
+                 colAvailable) {
+                if ()
+            }
+        }
 
     }
 
-    private Set<Integer> regionsWithNumber(int number){
+
+    private Set<Integer> regionsWithNumber(int number) {
         Set<Integer> result = new HashSet<>();
-        for (Region region:
-             regions) {
-            if (region.containsNumber(number)){
+        for (Region region :
+                regions) {
+            if (region.containsNumber(number)) {
                 result.add(region.getId());
             }
         }
@@ -123,7 +153,7 @@ public class Board {
                 }
                 numberRecorder.increment(number);
             }
-            addCell(row,col,number);
+            addCell(row, col, number);
         }
         return true;
     }
@@ -135,8 +165,8 @@ public class Board {
         return targetRegion.getCell(region_row, region_col);
     }
 
-    private void addCell(int row, int col,int number) {
-        CellEntity cellEntity = new CellEntity(row,col,number);
+    private void addCell(int row, int col, int number) {
+        CellEntity cellEntity = new CellEntity(row, col, number);
         Region targetRegion = getRegion(row, col);
 //        int region_row = row % Region.ROWS;
 //        int region_col = col % Region.COLS;
@@ -150,4 +180,39 @@ public class Board {
         return regions.get(id);
     }
 
+    public int getRowFromRegion(int regionId, int row) {
+        return row + (regionId / COL_REGIONS) * Region.ROWS;
+    }
+
+    public int getColFromRegion(int regionId, int col) {
+        return col + (regionId % COL_REGIONS) * Region.COLS;
+    }
+
+    public int getRegionRow(int row){
+        return row % Region.ROWS;
+    }
+
+    public int getRegionCol(int col){
+        return col % Region.COLS;
+    }
+
+    public boolean rowGroupContains(int number, int row) {
+        return rowGroupMap.get(row).contains(number);
+    }
+
+    public boolean colGroupContains(int number, int col) {
+        return colGroupMap.get(col).contains(number);
+    }
+
+    public boolean assignNumber(int row,int col,int number){
+        Region region = getRegion(row,col);
+        if (validateRegion(region.getId(),number) && validateRow(row,number) && validateCol(col,number)){
+            CellEntity cellEntity = region.getCell(getRegionRow(row),getRegionCol(col));
+            if (cellEntity.isDefinitive()){
+                return false;
+            }else {
+
+            }
+        }
+    }
 }

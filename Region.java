@@ -72,8 +72,9 @@ public class Region {
         return mCells.get(index).isDefinitive();
     }
 
+    @Deprecated
     public boolean containsNumber(int number) {
-        return mSolvedNumberSet.contains(number);
+        return false;
     }
 
     public Set<Integer> getCandidates(){

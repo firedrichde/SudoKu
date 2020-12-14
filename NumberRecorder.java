@@ -22,11 +22,11 @@ public class NumberRecorder {
     public List<Integer> sortByCount() {
         int[] tmpArray = new int[]{1,2,3,4,5,6,7,8,9};
         for (int i = 0; i < tmpArray.length; i++) {
-            int max = numberCountMap.get(i);
+            int max = numberCountMap.get(tmpArray[i]);
             int index = i;
             for (int j = i; j <tmpArray.length; j++) {
-                if (numberCountMap.get(j)>max){
-                    max = numberCountMap.get(j);
+                if (numberCountMap.get(tmpArray[j])>max){
+                    max = numberCountMap.get(tmpArray[j]);
                     index = j;
                 }
             }

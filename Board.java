@@ -30,10 +30,10 @@ public class Board extends AbstractBoard {
 
     }
 
-    public Board(List<String> initData) {
+    public Board() {
         super(S_SIDE_LENGTH);
         this.mCurrentIndex = -1;
-        this.mInitData = initData;
+//        this.mInitData = initData;
         solved = false;
         mCells = new ArrayList<>();
         mLinkGroupMap = new HashMap<>();
@@ -209,11 +209,11 @@ public class Board extends AbstractBoard {
 //    }
 
     private int getColIndexFromIndex(int index) {
-        return index / S_COLS;
+        return index % S_COLS;
     }
 
     private int getRowIndexFromIndex(int index) {
-        return index % S_COLS;
+        return index / S_COLS;
     }
 
     private int getRegionIdFromIndex(int index) {
@@ -226,15 +226,15 @@ public class Board extends AbstractBoard {
         if (number == S_UN_DEFINITIVE_NUMBER) {
             return true;
         }
-        List<Integer> rowNumbers = getNumbersAtRow(rowIndex);
+        Set<Integer> rowNumbers = getNumbersAtRow(rowIndex);
         if (!rowNumbers.isEmpty() && rowNumbers.contains(number)) {
             return false;
         }
-        List<Integer> colNumbers = getNumbersAtCol(colIndex);
+        Set<Integer> colNumbers = getNumbersAtCol(colIndex);
         if (!colNumbers.isEmpty() && colNumbers.contains(number)) {
             return false;
         }
-        List<Integer> regionNumbers = getNumbersAtChildBoard(regionId);
+        Set<Integer> regionNumbers = getNumbersAtChildBoard(regionId);
         if (!regionNumbers.isEmpty() && regionNumbers.contains(number)) {
             return false;
         }
@@ -256,6 +256,8 @@ public class Board extends AbstractBoard {
     public void addCell(CellEntity cellEntity) {
         int number = cellEntity.getNumber();
         updateRowGroups(cellEntity);
+        updateColGroups(cellEntity);
+        updateRegionGroup(cellEntity);
     }
 
     public void updateRowGroups(CellEntity cellEntity) {
@@ -272,7 +274,7 @@ public class Board extends AbstractBoard {
 
     @Override
     public Set<Integer> getNumbersAtRow(int rowIndex) {
-        List<Integer> result = new ArrayList<>();
+        Set<Integer> result = new HashSet<>();
         for (CellEntity cell :
                 mRowGroupMap.get(rowIndex)) {
             result.add(cell.getNumber());
@@ -281,8 +283,8 @@ public class Board extends AbstractBoard {
     }
 
     @Override
-    public List<Integer> getNumbersAtCol(int colIndex) {
-        List<Integer> result = new ArrayList<>();
+    public Set<Integer> getNumbersAtCol(int colIndex) {
+        Set<Integer> result = new HashSet<>();
         for (CellEntity cell :
                 mColGroupMap.get(colIndex)) {
             result.add(cell.getNumber());
@@ -291,30 +293,67 @@ public class Board extends AbstractBoard {
     }
 
     @Override
-    public List<Integer> getNumbersAtChildBoard(int childId) {
-        List<Integer> result = new ArrayList<>();
+    public Set<Integer> getNumbersAtChildBoard(int childId) {
+        Set<Integer> result = new HashSet<>();
         for (CellEntity cell : mRegions.get(childId).getCells()) {
             result.add(cell.getNumber());
         }
-        return null;
+        return result;
     }
 
-    public void scanRows(){
+    public int scanRows(){
+        int changes = 0;
         List<CellEntity> cells;
+        Set<Integer> numbers;
         for (int i = 0; i < S_ROWS; i++) {
             cells = mRowGroupMap.get(i);
+            numbers = getNumbersAtRow(i);
+            if (numbers!=null && !numbers.isEmpty()){
+                for (CellEntity cell:
+                     cells) {
+                    if (cell.getType()!=CellEntityType.SINGLE && cell.getCandidate().size()==1){
+                        assignNumber(cell,cell.getCandidate().getNumber());
+                        changes+=1;
+                    }
+                }
+            }
         }
+        return changes;
+    }
+
+    public int scanCols(){
+        int changes = 0;
+        List<CellEntity> cells;
+        Set<Integer> numbers;
+        for (int i = 0; i < S_COLS; i++) {
+            cells = mColGroupMap.get(i);
+            numbers = getNumbersAtCol(i);
+            if (numbers!=null && !numbers.isEmpty()){
+                for (CellEntity cell:
+                        cells) {
+                    if (cell.getType()!=CellEntityType.SINGLE && cell.getCandidate().size()==1){
+                        assignNumber(cell,cell.getCandidate().getNumber());
+                        changes +=1;
+                    }
+                }
+            }
+        }
+        return changes;
     }
 
     @Override
     public void scanNumber(int number) {
-        Set<Integer> regions_fill = getRegionIdWithNumber(number);
-        Set<Integer> regions_empty = getRegionIdWithOutNumber(number);
-        for (Integer regionId :
-                regions_empty) {
-            scanNumberAtRegion(number, regionId);
+//        Set<Integer> regions_fill = getRegionIdWithNumber(number);
+//        Set<Integer> regions_empty = getRegionIdWithOutNumber(number);
+        for (int i = 0; i < S_REGIONS; i++) {
+            scanNumberAtRegion(number, i);
         }
-
+        int colChanges = -1;
+        int rowChanges = -1;
+        while(colChanges!=0 && rowChanges!=0){
+            colChanges = scanCols();
+            rowChanges = scanRows();
+        }
     }
 
     @Override
@@ -338,7 +377,7 @@ public class Board extends AbstractBoard {
         }
         if (candidates.size() == 1) {
             cellEntity = candidates.get(0);
-            int index = cellEntity.getRow() * S_COLS + cellEntity.getRow();
+            int index = cellEntity.getRow() * S_COLS + cellEntity.getCol();
             assignNumber(index, number);
         } else if (candidates.size() == 2) {
             //add Cell Entity Link
@@ -358,6 +397,10 @@ public class Board extends AbstractBoard {
 
     public void assignNumber(int index, int number) {
         CellEntity cellEntity = mCells.get(index);
+        assignNumber(cellEntity,number);
+    }
+
+    public void assignNumber(CellEntity cellEntity,int number){
         cellEntity.setNumber(number);
         updateAfterAssign(cellEntity,number);
     }
@@ -414,7 +457,7 @@ public class Board extends AbstractBoard {
         int colIndex = getColIndexFromIndex(index);
         int regionId = getRegionIdFromIndex(index);
         if (validate(number, rowIndex, colIndex, regionId)) {
-            CellEntity newCell = new CellEntity(rowIndex, colIndex, number);
+            CellEntity newCell = new CellEntity(number,rowIndex, colIndex, regionId);
             mCells.add(newCell);
             addCell(newCell);
             mCurrentIndex += 1;
@@ -455,6 +498,20 @@ public class Board extends AbstractBoard {
             List<CellEntityLink> linkList = new ArrayList<>();
             linkList.add(link);
             mLinkGroupMap.put(number, linkList);
+        }
+    }
+
+    public void print(){
+        for (int i = 0; i < mCells.size() ; i++) {
+            CellEntity cellEntity = mCells.get(i);
+            if (cellEntity.getType()==CellEntityType.SINGLE ){
+                System.out.print(cellEntity);
+            }else {
+                System.out.print(S_UN_DEFINITIVE_NUMBER_SYMBOL);
+            }
+            if((i+1)%S_COLS==0){
+                System.out.println();
+            }
         }
     }
 }

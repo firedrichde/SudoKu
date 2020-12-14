@@ -45,9 +45,9 @@ abstract public class AbstractBoard {
 
     abstract public Set<Integer> getNumbersAtRow(int rowIndex);
 
-    abstract public List<Integer> getNumbersAtCol(int colIndex);
+    abstract public Set<Integer> getNumbersAtCol(int colIndex);
 
-    abstract public List<Integer> getNumbersAtChildBoard(int childId);
+    abstract public Set<Integer> getNumbersAtChildBoard(int childId);
 
     abstract public Set<Integer> getRegionIdWithNumber(int number);
 

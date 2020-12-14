@@ -111,4 +111,9 @@ public class CellEntity {
     public int hashCode() {
         return Objects.hash(mNumber);
     }
+
+    @Override
+    public String toString() {
+        return String.valueOf(mNumber);
+    }
 }

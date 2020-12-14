@@ -31,4 +31,8 @@ public class Candidate {
         return size()==1;
     }
 
+    public int getNumber(){
+        return  (int)numbers.toArray()[0];
+    }
+
 }

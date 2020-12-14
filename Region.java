@@ -7,71 +7,80 @@ import java.util.Set;
  * Region
  */
 public class Region {
-    public static final int CELL_SIZE = 9;
-    public static final int ROWS = 3;
-    public static final int COLS = 3;
-    private int id;
-    private List<CellEntity> cells;
-    private Set<Integer> solvedNumberSet;
+    public static final int S_SIDE_LENGTH = 3;
+    public static final int S_ROWS = 3;
+    public static final int S_COLS = 3;
+    private int mId;
+    private List<CellEntity> mCells;
+    private Set<Integer> mSolvedNumberSet;
 
     public Region(int id) {
-        this.id = id;
-        this.cells = new ArrayList<>();
-        for (int i = 0; i < ROWS; i++) {
-            for (int j = 0; j < COLS; j++) {
-                cells.add(new CellEntity(i, j));
-            }
-        }
-        this.solvedNumberSet = new HashSet<>();
+        this.mId = id;
+        this.mCells = new ArrayList<>();
+        this.mSolvedNumberSet = new HashSet<>();
     }
 
     public  int getId(){
-        return id;
+        return mId;
     }
 
+    public List<CellEntity> getCells(){
+        return mCells;
+    }
+
+    @Deprecated
     public List<CellEntity> getCellsAtRowIndex(int row) {
         List<CellEntity> result = new ArrayList<>();
-        for (int i = 0; i < COLS; i++) {
-            int index = row * COLS + i;
-            result.add(cells.get(index));
+        for (int i = 0; i < S_COLS; i++) {
+            int index = row * S_COLS + i;
+            result.add(mCells.get(index));
         }
         return result;
     }
 
+    @Deprecated
     public List<CellEntity> getCellAtColIndex(int col) {
         List<CellEntity> result = new ArrayList<>();
-        for (int i = 0; i < ROWS; i++) {
-            int index = i * COLS + col;
-            result.add(cells.get(index));
+        for (int i = 0; i < S_ROWS; i++) {
+            int index = i * S_COLS + col;
+            result.add(mCells.get(index));
         }
         return result;
     }
 
-    public CellEntity getCell(int row, int col) {
-        int index = row * COLS + col;
-        return cells.get(index);
+    public CellEntity getCell(int index) {
+        return mCells.get(index);
     }
 
-    public boolean assignNumber(int row, int col, int number) {
-        if (containsNumber(number)) {
-            return false;
-        } else {
-            CellEntity cellEntity = getCell(row, col);
-            cellEntity.setNumber(number);
-            solvedNumberSet.add(number);
-            return true;
-        }
-    }
+//    @Deprecated
+//    public boolean assignNumber(int row, int col, int number) {
+//        if (containsNumber(number)) {
+//            return false;
+//        } else {
+//            CellEntity cellEntity = getCell(row, col);
+//            cellEntity.setNumber(number);
+//            mSolvedNumberSet.add(number);
+//            return true;
+//        }
+//    }
     public void add(CellEntity cellEntity){
-        cells.add(cellEntity);
-        solvedNumberSet.add(cellEntity.getNumber());
+        mCells.add(cellEntity);
+        mSolvedNumberSet.add(cellEntity.getNumber());
+    }
+
+    public boolean isDefinitive(int index){
+        return mCells.get(index).isDefinitive();
     }
 
     public boolean containsNumber(int number) {
-        return solvedNumberSet.contains(number);
+        return mSolvedNumberSet.contains(number);
     }
 
     public Set<Integer> getCandidates(){
-        return NumberUtil.complement(solvedNumberSet);
+        return NumberUtil.complement(mSolvedNumberSet);
+    }
+
+    public int size(){
+        return S_SIDE_LENGTH*S_SIDE_LENGTH;
     }
 }

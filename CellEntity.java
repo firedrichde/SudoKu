@@ -1,50 +1,102 @@
 import java.util.Objects;
+import java.util.Set;
 
 public class CellEntity {
     public static final int UN_DEFINITIVE_NUMBER = -1;
 
-    private int number;
-    private int row;
-    private int col;
-    private boolean definitive;
+    private int mNumber;
+    private int mRow;
+    private int mCol;
+    private int mRegionId;
+    private boolean mDefinitive;
+    private Candidate mCandidate;
+    private CellEntityType mType;
 
-    public CellEntity(int number, int row, int col) {
-        this.number = number;
-        this.row = row;
-        this.col = col;
-        this.definitive = false;
+    public CellEntity() {
+
     }
 
-    public CellEntity(int row, int col) {
-        this(UN_DEFINITIVE_NUMBER, row, col);
+    public CellEntity(int number, int row, int col, int regionId) {
+        this.mNumber = number;
+        this.mRow = row;
+        this.mCol = col;
+        this.mRegionId = regionId;
+        if (number != UN_DEFINITIVE_NUMBER) {
+            this.mDefinitive = true;
+            this.mType = CellEntityType.SINGLE;
+        } else {
+            this.mDefinitive = false;
+            mCandidate = new Candidate();
+            mCandidate.fillAllNumber();
+            this.mType = CellEntityType.CANDIDATES;
+        }
+    }
+
+    public CellEntity(int row, int col, int regionId) {
+        this(UN_DEFINITIVE_NUMBER, row, col, regionId);
     }
 
     public void setNumber(int number) {
-        this.number = number;
+        this.mNumber = number;
+        if (this.mNumber != UN_DEFINITIVE_NUMBER) {
+            this.mDefinitive = true;
+            mCandidate = null;
+            mType = CellEntityType.SINGLE;
+        }
     }
 
     public int getNumber() {
-        return this.number;
+        return this.mNumber;
     }
 
     public void setCol(int col) {
-        this.col = col;
+        this.mCol = col;
     }
 
     public int getCol() {
-        return this.col;
+        return this.mCol;
     }
 
     public void setRow(int row) {
-        this.row = row;
+        this.mRow = row;
     }
 
     public int getRow() {
-        return this.row;
+        return this.mRow;
     }
 
-    public boolean isDefinitive(){
-        return definitive;
+    public boolean isDefinitive() {
+        return mDefinitive;
+    }
+
+    public void setRegionId(int regionId) {
+        mRegionId = regionId;
+    }
+
+    public int getRegionId() {
+        return mRegionId;
+    }
+
+    public void addCandidate(int number) {
+        mCandidate.add(number);
+    }
+
+    public void removeCandidate(int number){
+        if (mType!=CellEntityType.SINGLE){
+            mCandidate.remove(number);
+        }
+    }
+
+    public Candidate getCandidate() {
+        return mCandidate;
+    }
+
+    public CellEntityType getType() {
+        return mType;
+    }
+
+    public void setType(CellEntityType type) {
+        mType = type;
     }
 
     @Override
@@ -52,11 +104,11 @@ public class CellEntity {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         CellEntity that = (CellEntity) o;
-        return number == that.number;
+        return that.getRow() == getRow() && that.getCol() == getCol();
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(number);
+        return Objects.hash(mNumber);
     }
 }

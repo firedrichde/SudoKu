@@ -1,43 +1,86 @@
 public class CellEntityLink {
 
-    private int number;
-    private CellEntity left;
-    private CellEntity right;
-    private CellEntityLinkType cellEntityLinkType;
+    private int mNumber;
+    private CellEntity mLeft;
+    private CellEntity mRight;
+    private CellEntityLinkType mCellEntityLinkType;
+    private boolean mValid;
 
     public CellEntityLink(CellEntity left, CellEntity right) {
-        this.left = left;
-        this.right = right;
-        this.number = left.getNumber();
+        this.mNumber = left.getNumber();
         if (left.getRow()==right.getRow()){
-            cellEntityLinkType = CellEntityLinkType.HORIZONTAL;
+            mCellEntityLinkType = CellEntityLinkType.HORIZONTAL;
+            if (left.getCol()<=right.getCol()){
+                this.mLeft = left;
+                this.mRight = right;
+            }else {
+                this.mLeft = right;
+                this.mRight = left;
+            }
         }else if(left.getCol()==right.getCol()){
-            cellEntityLinkType = CellEntityLinkType.VERTICAL;
+            mCellEntityLinkType = CellEntityLinkType.VERTICAL;
+            if (left.getRow()<=right.getRow()){
+                this.mLeft = left;
+                this.mRight = right;
+            }else {
+                this.mLeft =right;
+                this.mRight = left;
+            }
         }else {
-            cellEntityLinkType = CellEntityLinkType.DECLINING;
+            mCellEntityLinkType = CellEntityLinkType.DECLINING;
+            if (left.getCol()<=right.getCol()){
+                this.mLeft = left;
+                this.mRight = right;
+            }else {
+                this.mLeft = right;
+                this.mRight = left;
+            }
         }
+        mValid = true;
     }
 
     public int getNumber() {
-        return number;
+        return mNumber;
     }
 
     public CellEntity getLeft() {
-        return left;
+        return mLeft;
     }
 
     public CellEntity getRight() {
-        return right;
+        return mRight;
     }
 
     public CellEntityLinkType getCellEntityLinkType() {
-        return cellEntityLinkType;
+        return mCellEntityLinkType;
     }
 
     public int getCol(){
-        return left.getCol();
+        return mLeft.getCol();
     }
     public int getRow(){
-        return left.getRow();
+        return mLeft.getRow();
+    }
+
+    public void assignNumber(CellEntity cellEntity){
+        CellEntity anotherCell = cellEntity.equals(mLeft)? mRight:mLeft;
+        anotherCell.removeCandidate(this.mNumber);
+        invalidate();
+    }
+
+    public void invalidate(){
+        mValid =  false;
+    }
+
+    public boolean isValid() {
+        return mValid;
+    }
+
+    public boolean belong(CellEntity cellEntity){
+        if(mLeft.equals(cellEntity) || mRight.equals(cellEntity)){
+            return true;
+        }else {
+            return false;
+        }
     }
 }

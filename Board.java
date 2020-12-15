@@ -1,4 +1,5 @@
 import java.io.InputStream;
+import java.lang.reflect.Array;
 import java.util.*;
 
 /**
@@ -23,6 +24,7 @@ public class Board extends AbstractBoard {
     private Map<Integer, List<CellEntityXWing>> mXwingGroupMap;
     private ArrayList<CellEntityLinkPair> mCellPairs;
     private List<String> mInitData;
+    private int step;
 //    private NumberRecorder numberRecorder;
 
     public Board(InputStream inputStream) {
@@ -32,6 +34,7 @@ public class Board extends AbstractBoard {
 
     public Board() {
         super(S_SIDE_LENGTH);
+        this.step = -1;
         this.mCurrentIndex = -1;
 //        this.mInitData = initData;
         solved = false;
@@ -258,6 +261,11 @@ public class Board extends AbstractBoard {
         updateRowGroups(cellEntity);
         updateColGroups(cellEntity);
         updateRegionGroup(cellEntity);
+        if (cellEntity.getNumber() != CellEntity.UN_DEFINITIVE_NUMBER) {
+            removeCandidateAtRegion(cellEntity.getRegionId(), cellEntity.getNumber());
+            removeCandidateAtRow(cellEntity.getRow(), cellEntity.getNumber());
+            removeCandidateAtCol(cellEntity.getCol(), cellEntity.getNumber());
+        }
     }
 
     public void updateRowGroups(CellEntity cellEntity) {
@@ -277,7 +285,9 @@ public class Board extends AbstractBoard {
         Set<Integer> result = new HashSet<>();
         for (CellEntity cell :
                 mRowGroupMap.get(rowIndex)) {
-            result.add(cell.getNumber());
+            if (cell.isDefinitive()) {
+                result.add(cell.getNumber());
+            }
         }
         return result;
     }
@@ -287,7 +297,9 @@ public class Board extends AbstractBoard {
         Set<Integer> result = new HashSet<>();
         for (CellEntity cell :
                 mColGroupMap.get(colIndex)) {
-            result.add(cell.getNumber());
+            if (cell.isDefinitive()) {
+                result.add(cell.getNumber());
+            }
         }
         return result;
     }
@@ -296,24 +308,35 @@ public class Board extends AbstractBoard {
     public Set<Integer> getNumbersAtChildBoard(int childId) {
         Set<Integer> result = new HashSet<>();
         for (CellEntity cell : mRegions.get(childId).getCells()) {
-            result.add(cell.getNumber());
+            if (cell.isDefinitive()) {
+                result.add(cell.getNumber());
+            }
         }
         return result;
     }
 
-    public int scanRows(){
+    private boolean regionContainsNumber(int regionId, int number) {
+        Region region = mRegions.get(regionId);
+        if (region != null && region.containsNumber(number)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public int scanRows() {
         int changes = 0;
         List<CellEntity> cells;
         Set<Integer> numbers;
         for (int i = 0; i < S_ROWS; i++) {
             cells = mRowGroupMap.get(i);
             numbers = getNumbersAtRow(i);
-            if (numbers!=null && !numbers.isEmpty()){
-                for (CellEntity cell:
-                     cells) {
-                    if (cell.getType()!=CellEntityType.SINGLE && cell.getCandidate().size()==1){
-                        assignNumber(cell,cell.getCandidate().getNumber());
-                        changes+=1;
+            if (numbers != null && !numbers.isEmpty()) {
+                for (CellEntity cell :
+                        cells) {
+                    if (cell.getType() != CellEntityType.SINGLE && cell.onlyOneCandidate()) {
+                        assignNumber(cell, cell.getCandidate().getNumber());
+                        changes += 1;
                     }
                 }
             }
@@ -321,19 +344,19 @@ public class Board extends AbstractBoard {
         return changes;
     }
 
-    public int scanCols(){
+    public int scanCols() {
         int changes = 0;
         List<CellEntity> cells;
         Set<Integer> numbers;
         for (int i = 0; i < S_COLS; i++) {
             cells = mColGroupMap.get(i);
             numbers = getNumbersAtCol(i);
-            if (numbers!=null && !numbers.isEmpty()){
-                for (CellEntity cell:
+            if (numbers != null && !numbers.isEmpty()) {
+                for (CellEntity cell :
                         cells) {
-                    if (cell.getType()!=CellEntityType.SINGLE && cell.getCandidate().size()==1){
-                        assignNumber(cell,cell.getCandidate().getNumber());
-                        changes +=1;
+                    if (cell.getType() != CellEntityType.SINGLE && cell.onlyOneCandidate()) {
+                        assignNumber(cell, cell.getCandidate().getNumber());
+                        changes += 1;
                     }
                 }
             }
@@ -342,15 +365,32 @@ public class Board extends AbstractBoard {
     }
 
     @Override
+    void preHandle() {
+        for (CellEntity cell:
+             mCells) {
+            if (cell.isDefinitive()){
+                int number = cell.getNumber();
+                removeCandidateAtCol(cell.getCol(),number);
+                removeCandidateAtRow(cell.getRow(),number);
+                removeCandidateAtRegion(cell.getRegionId(),number);
+            }
+        }
+    }
+
+    @Override
     public void scanNumber(int number) {
-//        Set<Integer> regions_fill = getRegionIdWithNumber(number);
-//        Set<Integer> regions_empty = getRegionIdWithOutNumber(number);
+/*
+        Set<Integer> regions_fill = getRegionIdWithNumber(number);
+        Set<Integer> regions_empty = getRegionIdWithOutNumber(number);
+*/
         for (int i = 0; i < S_REGIONS; i++) {
-            scanNumberAtRegion(number, i);
+            if (!regionContainsNumber(i, number)) {
+                scanNumberAtRegion(number, i);
+            }
         }
         int colChanges = -1;
         int rowChanges = -1;
-        while(colChanges!=0 && rowChanges!=0){
+        while (colChanges != 0 && rowChanges != 0) {
             colChanges = scanCols();
             rowChanges = scanRows();
         }
@@ -378,7 +418,9 @@ public class Board extends AbstractBoard {
         if (candidates.size() == 1) {
             cellEntity = candidates.get(0);
             int index = cellEntity.getRow() * S_COLS + cellEntity.getCol();
+            System.out.println(String.format("cell %d (%d,%d)", number, cellEntity.getRow(), cellEntity.getCol()));
             assignNumber(index, number);
+            print();
         } else if (candidates.size() == 2) {
             //add Cell Entity Link
             CellEntityLink link = new CellEntityLink(candidates.get(0), candidates.get(1));
@@ -397,49 +439,83 @@ public class Board extends AbstractBoard {
 
     public void assignNumber(int index, int number) {
         CellEntity cellEntity = mCells.get(index);
-        assignNumber(cellEntity,number);
+        assignNumber(cellEntity, number);
     }
 
-    public void assignNumber(CellEntity cellEntity,int number){
+    public void assignNumber(CellEntity cellEntity, int number) {
         cellEntity.setNumber(number);
-        updateAfterAssign(cellEntity,number);
+        updateAfterAssign(cellEntity, number);
     }
 
-    public void updateAfterAssign(CellEntity cellEntity,int number){
-        for (CellEntityLinkPair pair:
-             getCellPairs()) {
-            if (pair.belong(cellEntity)){
-                pair.assignNumber(cellEntity,number);
+    public void updateAfterAssign(CellEntity cellEntity, int number) {
+        for (CellEntityLinkPair pair :
+                getCellPairs()) {
+            if (pair.belong(cellEntity)) {
+                pair.assignNumber(cellEntity, number);
+            }
+        }
+        // if assign a number to the specify cell,we should remove candidate(number)  for each related cell
+        removeCandidateAtCol(cellEntity.getCol(), number);
+        removeCandidateAtRow(cellEntity.getRow(), number);
+        removeCandidateAtRegion(cellEntity.getRegionId(), number);
+    }
+
+    public void removeCandidateAtRow(int row, int number) {
+        List<CellEntity> cells = mRowGroupMap.get(row);
+        for (CellEntity cell :
+                cells) {
+            if (!cell.isDefinitive()) {
+                cell.removeCandidate(number);
             }
         }
     }
 
-    public void updateLinks(int number){
+    public void removeCandidateAtCol(int col, int number) {
+        List<CellEntity> cells = mColGroupMap.get(col);
+        for (CellEntity cell :
+                cells) {
+            if (!cell.isDefinitive()) {
+                cell.removeCandidate(number);
+            }
+        }
+    }
+
+    public void removeCandidateAtRegion(int regionId, int number) {
+        List<CellEntity> cells = mRegions.get(regionId).getCells();
+        for (CellEntity cell :
+                cells) {
+            if (!cell.isDefinitive()) {
+                cell.removeCandidate(number);
+            }
+        }
+    }
+
+    public void updateLinks(int number) {
         List<CellEntityLink> links = mLinkGroupMap.get(number);
-        if (links!=null && !links.isEmpty()){
+        if (links != null && !links.isEmpty()) {
             Set<CellEntityLink> invalidSet = new HashSet<>();
             for (int i = 0; i < links.size(); i++) {
-                if (!links.get(i).isValid()){
+                if (!links.get(i).isValid()) {
                     invalidSet.add(links.get(i));
                 }
             }
-            for (CellEntityLink link:
-                 invalidSet) {
+            for (CellEntityLink link :
+                    invalidSet) {
                 links.remove(link);
             }
         }
     }
 
-    public void updatePairs(){
+    public void updatePairs() {
         Set<CellEntityLinkPair> invalidSet = new HashSet<>();
-        for (CellEntityLinkPair pair:
-             mCellPairs) {
-            if (!pair.isValid()){
+        for (CellEntityLinkPair pair :
+                mCellPairs) {
+            if (!pair.isValid()) {
                 invalidSet.add(pair);
             }
         }
-        for (CellEntityLinkPair pair:
-             invalidSet) {
+        for (CellEntityLinkPair pair :
+                invalidSet) {
             mCellPairs.remove(pair);
         }
     }
@@ -457,7 +533,7 @@ public class Board extends AbstractBoard {
         int colIndex = getColIndexFromIndex(index);
         int regionId = getRegionIdFromIndex(index);
         if (validate(number, rowIndex, colIndex, regionId)) {
-            CellEntity newCell = new CellEntity(number,rowIndex, colIndex, regionId);
+            CellEntity newCell = new CellEntity(number, rowIndex, colIndex, regionId);
             mCells.add(newCell);
             addCell(newCell);
             mCurrentIndex += 1;
@@ -486,7 +562,7 @@ public class Board extends AbstractBoard {
         }
     }
 
-    public List<CellEntityLinkPair> getCellPairs(){
+    public List<CellEntityLinkPair> getCellPairs() {
         updatePairs();
         return mCellPairs;
     }
@@ -501,15 +577,18 @@ public class Board extends AbstractBoard {
         }
     }
 
-    public void print(){
-        for (int i = 0; i < mCells.size() ; i++) {
+    public void print() {
+        step += 1;
+        System.out.println("Step: " + step);
+        for (int i = 0; i < mCells.size(); i++) {
             CellEntity cellEntity = mCells.get(i);
-            if (cellEntity.getType()==CellEntityType.SINGLE ){
+            if (cellEntity.getType() == CellEntityType.SINGLE) {
                 System.out.print(cellEntity);
-            }else {
+            } else {
                 System.out.print(S_UN_DEFINITIVE_NUMBER_SYMBOL);
             }
-            if((i+1)%S_COLS==0){
+            System.out.print(" ");
+            if ((i + 1) % S_COLS == 0) {
                 System.out.println();
             }
         }

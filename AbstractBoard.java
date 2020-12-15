@@ -30,12 +30,14 @@ abstract public class AbstractBoard {
     }
 
     public void scan() {
+        preHandle();
         List<Integer> order = mNumberRecorder.sortByCount();
         for (int i = 0; i < order.size(); i++) {
             scanNumber(order.get(i));
         }
     }
 
+    abstract void preHandle();
 
     abstract public void scanNumber(int number);
 

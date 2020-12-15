@@ -72,8 +72,13 @@ public class Region {
         return mCells.get(index).isDefinitive();
     }
 
-    @Deprecated
     public boolean containsNumber(int number) {
+        for (CellEntity cell:
+             mCells) {
+            if (cell.getNumber() == number){
+                return true;
+            }
+        }
         return false;
     }
 

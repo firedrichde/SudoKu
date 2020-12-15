@@ -8,6 +8,7 @@ public class CellEntity {
     private int mRow;
     private int mCol;
     private int mRegionId;
+    // the number is definitive
     private boolean mDefinitive;
     private Candidate mCandidate;
     private CellEntityType mType;
@@ -39,7 +40,7 @@ public class CellEntity {
     public void setNumber(int number) {
         this.mNumber = number;
         if (this.mNumber != UN_DEFINITIVE_NUMBER) {
-            this.mDefinitive = true;
+            mDefinitive = true;
             mCandidate = null;
             mType = CellEntityType.SINGLE;
         }
@@ -85,6 +86,14 @@ public class CellEntity {
         if (mType!=CellEntityType.SINGLE){
             mCandidate.remove(number);
         }
+//        if (mCandidate==null || mCandidate.size()==1){
+//            mType = CellEntityType.SINGLE;
+//            mDefinitive = true;
+//        }
+    }
+
+    public boolean onlyOneCandidate(){
+        return mCandidate!=null && mCandidate.size()==1;
     }
 
     public Candidate getCandidate() {

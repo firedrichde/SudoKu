@@ -24,7 +24,9 @@ public class Candidate {
     }
 
     public void remove(int num) {
-        numbers.remove(num);
+        if (numbers.contains(num)){
+            numbers.remove(num);
+        }
     }
 
     public boolean isDefinitive(){

@@ -5,15 +5,15 @@ public class SuduKuLauncher {
 
     public static void main(String[] args) {
         String[] data = new String[81];
-        String[] line1 = new String[]{".",".","4","9","6","2","3",".","."};
-        String[] line2 = new String[]{".","6",".","1",".",".","4",".","."};
-        String[] line3 = new String[]{"8","2",".","3","7",".",".",".","6"};
-        String[] line4 = new String[]{".",".","1","4",".","6",".","2","."};
-        String[] line5 = new String[]{".",".","2","7","5",".",".",".","."};
-        String[] line6 = new String[]{".","9","3","2",".",".","7",".","4"};
-        String[] line7 = new String[]{"2","7",".",".","3",".","9","4","."};
-        String[] line8 = new String[]{"1",".",".",".",".",".","2","7","5"};
-        String[] line9 = new String[]{"9",".",".","8","2",".",".",".","1"};
+        String[] line1 = new String[]{".",".",".","4",".",".",".",".","."};
+        String[] line2 = new String[]{".","4","2",".","1",".","7","8","."};
+        String[] line3 = new String[]{"1","9","7","6",".","3",".","5","."};
+        String[] line4 = new String[]{".","7",".",".",".",".",".",".","8"};
+        String[] line5 = new String[]{"8",".",".","3",".",".",".","2","."};
+        String[] line6 = new String[]{".",".","6",".",".","1",".","4","3"};
+        String[] line7 = new String[]{".",".","9",".","6","4","8",".","."};
+        String[] line8 = new String[]{".",".",".",".","9",".",".",".","1"};
+        String[] line9 = new String[]{"6",".",".",".",".",".","9",".","4"};
         int index=0;
         for (int i = 0; i < line1.length; i++) {
             data[index] = line1[i];

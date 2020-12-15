@@ -364,6 +364,9 @@ public class Board extends AbstractBoard {
         return changes;
     }
 
+    /**
+     * remove candidate for each empty cell from numbers of filled cells
+     */
     @Override
     void preHandle() {
         for (CellEntity cell:

@@ -4,7 +4,7 @@ import java.util.Set;
 abstract public class AbstractBoard {
     public static final String S_UN_DEFINITIVE_NUMBER_SYMBOL = ".";
     public static final int S_UN_DEFINITIVE_NUMBER = -1;
-    private int mSideLength;
+    private final int mSideLength;
     private NumberRecorder mNumberRecorder;
 
     public AbstractBoard(int sideLength) {
@@ -51,7 +51,9 @@ abstract public class AbstractBoard {
 
     abstract public Set<Integer> getNumbersAtChildBoard(int childId);
 
+    @Deprecated
     abstract public Set<Integer> getRegionIdWithNumber(int number);
 
+    @Deprecated
     abstract public Set<Integer> getRegionIdWithOutNumber(int number);
 }

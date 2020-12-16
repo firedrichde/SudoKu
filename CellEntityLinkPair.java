@@ -18,15 +18,11 @@ public class CellEntityLinkPair {
     }
 
     public boolean belong(CellEntity cellEntity) {
-        if (mLeftCell.equals(cellEntity)||mRightCell.equals(cellEntity)){
-            return true;
-        }else {
-            return false;
-        }
+        return mLeftCell.equals(cellEntity) || mRightCell.equals(cellEntity);
     }
 
     public void assignNumber(CellEntity cellEntity,int number){
-        CellEntity anotherCell = null;
+        CellEntity anotherCell;
         if (cellEntity.equals(mLeftCell)){
             anotherCell = mRightCell;
         }else {

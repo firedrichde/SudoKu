@@ -10,7 +10,7 @@ public class Region {
     public static final int S_SIDE_LENGTH = 3;
     public static final int S_ROWS = 3;
     public static final int S_COLS = 3;
-    private int mId;
+    private final int mId;
     private List<CellEntity> mCells;
     private Set<Integer> mSolvedNumberSet;
 
@@ -68,6 +68,7 @@ public class Region {
         mSolvedNumberSet.add(cellEntity.getNumber());
     }
 
+    @Deprecated
     public boolean isDefinitive(int index){
         return mCells.get(index).isDefinitive();
     }
@@ -82,6 +83,7 @@ public class Region {
         return false;
     }
 
+    @Deprecated
     public Set<Integer> getCandidates(){
         return NumberUtil.complement(mSolvedNumberSet);
     }

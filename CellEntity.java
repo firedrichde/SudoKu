@@ -1,21 +1,17 @@
 import java.util.Objects;
-import java.util.Set;
 
 public class CellEntity {
     public static final int UN_DEFINITIVE_NUMBER = -1;
 
     private int mNumber;
-    private int mRow;
-    private int mCol;
-    private int mRegionId;
+    private final int mRow;
+    private final int mCol;
+    private final int mRegionId;
     // the number is definitive
     private boolean mDefinitive;
     private Candidate mCandidate;
     private CellEntityType mType;
 
-    public CellEntity() {
-
-    }
 
     public CellEntity(int number, int row, int col, int regionId) {
         this.mNumber = number;
@@ -50,16 +46,8 @@ public class CellEntity {
         return this.mNumber;
     }
 
-    public void setCol(int col) {
-        this.mCol = col;
-    }
-
     public int getCol() {
         return this.mCol;
-    }
-
-    public void setRow(int row) {
-        this.mRow = row;
     }
 
     public int getRow() {
@@ -70,10 +58,6 @@ public class CellEntity {
         return mDefinitive;
     }
 
-    public void setRegionId(int regionId) {
-        mRegionId = regionId;
-    }
-
     public int getRegionId() {
         return mRegionId;
     }
@@ -82,18 +66,14 @@ public class CellEntity {
         mCandidate.add(number);
     }
 
-    public void removeCandidate(int number){
-        if (mType!=CellEntityType.SINGLE){
+    public void removeCandidate(int number) {
+        if (mType != CellEntityType.SINGLE) {
             mCandidate.remove(number);
         }
-//        if (mCandidate==null || mCandidate.size()==1){
-//            mType = CellEntityType.SINGLE;
-//            mDefinitive = true;
-//        }
     }
 
-    public boolean onlyOneCandidate(){
-        return mCandidate!=null && mCandidate.size()==1;
+    public boolean onlyOneCandidate() {
+        return mCandidate != null && mCandidate.size() == 1;
     }
 
     public Candidate getCandidate() {

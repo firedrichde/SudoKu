@@ -1,5 +1,4 @@
 import java.io.InputStream;
-import java.lang.reflect.Array;
 import java.util.*;
 
 /**
@@ -23,7 +22,6 @@ public class Board extends AbstractBoard {
     private Map<Integer, List<CellEntityLink>> mLinkGroupMap;
     private Map<Integer, List<CellEntityXWing>> mXwingGroupMap;
     private ArrayList<CellEntityLinkPair> mCellPairs;
-    private List<String> mInitData;
     private int step;
 //    private NumberRecorder numberRecorder;
 
@@ -36,13 +34,11 @@ public class Board extends AbstractBoard {
         super(S_SIDE_LENGTH);
         this.step = -1;
         this.mCurrentIndex = -1;
-//        this.mInitData = initData;
         solved = false;
         mCells = new ArrayList<>();
         mLinkGroupMap = new HashMap<>();
         mXwingGroupMap = new HashMap<>();
         mCellPairs = new ArrayList<>();
-//        numberRecorder = new NumberRecorder();
         mRegions = new ArrayList<>();
         for (int i = 0; i < S_REGIONS; i++) {
             mRegions.add(new Region(i));
@@ -57,49 +53,6 @@ public class Board extends AbstractBoard {
         }
     }
 
-
-//    @Deprecated
-//    private void scanRegion(int regionId, int number, Set<Integer> regions) {
-//
-//        List<Integer> rowAvailable = new ArrayList<>();
-//        List<Integer> colAvailable = new ArrayList<>();
-//        for (int i = 0; i < Region.S_COLS; i++) {
-//            int rowIndex = getRowFromRegion(regionId, i);
-//            if (!rowGroupContains(number, rowIndex)) {
-//                rowAvailable.add(i);
-//            }
-//        }
-//        for (int j = 0; j < Region.S_COLS; j++) {
-//            int colIndex = getColFromRegion(regionId, j);
-//            if (!colGroupContains(colIndex, number)) {
-//                colAvailable.add(j);
-//            }
-//        }
-//        for (Integer row :
-//                rowAvailable) {
-//            for (Integer col :
-//                    colAvailable) {
-//            }
-//        }
-//
-//    }
-
-
-    private Set<Integer> regionsWithNumber(int number) {
-        Set<Integer> result = new HashSet<>();
-        for (Region region :
-                mRegions) {
-            if (region.containsNumber(number)) {
-                result.add(region.getId());
-            }
-        }
-        return result;
-    }
-
-    @Deprecated
-    private boolean validate() {
-        return false;
-    }
 
     @Deprecated
     private boolean validateRegion(int id, int number) {
@@ -131,85 +84,10 @@ public class Board extends AbstractBoard {
         return true;
     }
 
-//    /**
-//     * parse the initial data from outer Environment
-//     *
-//     * @return false if the initial data is against the SudoKu rules,otherwise return true
-//     */
-//    private boolean parse() {
-//        for (int i = 0; i < mInitData.size(); i++) {
-//            int number;
-//            int row = i % S_COLS;
-//            int col = i - row * S_COLS;
-//            int regionId = (row / Region.S_ROWS) * S_ROW_REGIONS + (col / Region.S_COLS);
-//            if (mInitData.get(i).equals(EMPTY_SYMBOL)) {
-//                number = CellEntity.UN_DEFINITIVE_NUMBER;
-//            } else {
-//                number = Integer.parseInt(mInitData.get(i));
-//                boolean valid = validateRow(row, number) || validateCol(col, number) || validateRegion(regionId, number);
-//                if (!valid) {
-//                    return false;
-//                }
-//                numberRecorder.increment(number);
-//            }
-//            addCell(row, col, number);
-//        }
-//        return true;
-//    }
-
     private CellEntity getCell(int index) {
         return mCells.get(index);
     }
 
-//    private CellEntity getCell(int row, int col) {
-//        Region targetRegion = getRegion(row, col);
-//        int region_row = row % Region.ROWS;
-//        int region_col = col % Region.COLS;
-//        return targetRegion.getCell(region_row, region_col);
-//    }
-
-
-//    private Region getRegion(int row, int col) {
-//        int id = (row / Region.S_ROWS) * S_COL_REGIONS + col / Region.S_COLS;
-//        return mRegions.get(id);
-//    }
-//
-//    public int getRowFromRegion(int regionId, int row) {
-//        return row + (regionId / S_COL_REGIONS) * Region.S_ROWS;
-//    }
-//
-//    public int getColFromRegion(int regionId, int col) {
-//        return col + (regionId % S_COL_REGIONS) * Region.S_COLS;
-//    }
-//
-//    public int getRegionRow(int row) {
-//        return row % Region.S_ROWS;
-//    }
-//
-//    public int getRegionCol(int col) {
-//        return col % Region.S_COLS;
-//    }
-//
-//    public boolean rowGroupContains(int number, int row) {
-//        return mRowGroupMap.get(row).contains(number);
-//    }
-//
-//    public boolean colGroupContains(int number, int col) {
-//        return mColGroupMap.get(col).contains(number);
-//    }
-
-//    public boolean assignNumber(int row, int col, int number) {
-//        Region region = getRegion(row, col);
-//        if (validateRegion(region.getId(), number) && validateRow(row, number) && validateCol(col, number)) {
-//            CellEntity cellEntity = region.getCell(getRegionRow(row), getRegionCol(col));
-//            if (cellEntity.isDefinitive()) {
-//                return false;
-//            } else {
-//                return true;
-//            }
-//        }
-//        return true;
-//    }
 
     private int getColIndexFromIndex(int index) {
         return index % S_COLS;
@@ -262,9 +140,9 @@ public class Board extends AbstractBoard {
         updateColGroups(cellEntity);
         updateRegionGroup(cellEntity);
         if (cellEntity.getNumber() != CellEntity.UN_DEFINITIVE_NUMBER) {
-            removeCandidateAtRegion(cellEntity.getRegionId(), cellEntity.getNumber());
-            removeCandidateAtRow(cellEntity.getRow(), cellEntity.getNumber());
-            removeCandidateAtCol(cellEntity.getCol(), cellEntity.getNumber());
+            removeCandidateAtRegion(cellEntity.getRegionId(), number);
+            removeCandidateAtRow(cellEntity.getRow(), number);
+            removeCandidateAtCol(cellEntity.getCol(), number);
         }
     }
 
@@ -317,11 +195,7 @@ public class Board extends AbstractBoard {
 
     private boolean regionContainsNumber(int regionId, int number) {
         Region region = mRegions.get(regionId);
-        if (region != null && region.containsNumber(number)) {
-            return true;
-        } else {
-            return false;
-        }
+        return region != null && region.containsNumber(number);
     }
 
     public int scanRows() {
@@ -382,10 +256,6 @@ public class Board extends AbstractBoard {
 
     @Override
     public void scanNumber(int number) {
-/*
-        Set<Integer> regions_fill = getRegionIdWithNumber(number);
-        Set<Integer> regions_empty = getRegionIdWithOutNumber(number);
-*/
         for (int i = 0; i < S_REGIONS; i++) {
             if (!regionContainsNumber(i, number)) {
                 scanNumberAtRegion(number, i);
@@ -421,7 +291,7 @@ public class Board extends AbstractBoard {
         if (candidates.size() == 1) {
             cellEntity = candidates.get(0);
             int index = cellEntity.getRow() * S_COLS + cellEntity.getCol();
-            System.out.println(String.format("cell %d (%d,%d)", number, cellEntity.getRow(), cellEntity.getCol()));
+            System.out.printf("cell %d (%d,%d)%n", number, cellEntity.getRow(), cellEntity.getCol());
             assignNumber(index, number);
             print();
         } else if (candidates.size() == 2) {
@@ -497,9 +367,9 @@ public class Board extends AbstractBoard {
         List<CellEntityLink> links = mLinkGroupMap.get(number);
         if (links != null && !links.isEmpty()) {
             Set<CellEntityLink> invalidSet = new HashSet<>();
-            for (int i = 0; i < links.size(); i++) {
-                if (!links.get(i).isValid()) {
-                    invalidSet.add(links.get(i));
+            for (CellEntityLink cellEntityLink : links) {
+                if (!cellEntityLink.isValid()) {
+                    invalidSet.add(cellEntityLink);
                 }
             }
             for (CellEntityLink link :
@@ -525,8 +395,7 @@ public class Board extends AbstractBoard {
 
 
     public boolean isCandidateForNumber(CellEntity cellEntity, int number) {
-        boolean valid = validate(number, cellEntity.getRow(), cellEntity.getCol(), cellEntity.getRegionId());
-        return valid;
+        return validate(number, cellEntity.getRow(), cellEntity.getCol(), cellEntity.getRegionId());
     }
 
     @Override
